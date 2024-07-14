@@ -3,8 +3,8 @@ import React from 'react'
 import { useState } from 'react'
 import Head from 'next/head'
 import { FormEvent } from 'react'
-import Error from 'next/error'
 import { error } from 'console'
+import { Error } from 'mongoose'
 
 const EditInfo = () => {
 
@@ -32,12 +32,15 @@ const EditInfo = () => {
       body:JSON.stringify(formData),
     });
 
-    if(!response.ok){
-      throw new Error(`HTTP error! Status: ${response.status.toString()}`) as any;
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
+    // if(!response.ok){
+    //   throw new Error(`HTTP error! Status: ${response.status.toString()}`) as any;
+    // }
 
     const result = await response.json();
-
+    console.log('Success:', result);
     console.log(result);}
     catch (error:any) {
       console.error('Error:', error.message);
