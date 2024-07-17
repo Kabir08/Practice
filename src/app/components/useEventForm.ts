@@ -2,7 +2,7 @@ import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface FormData {
-  id?: string; // Add id as an optional field
+  event_id: string; // Ensure it's _id for MongoDB compatibility
   eventName: string;
   eventLocation: string;
   eventExpiry: string;
@@ -17,6 +17,7 @@ interface UseEventFormProps {
 
 export const useEventForm = ({ initialData, onSubmit }: UseEventFormProps) => {
   const [formData, setFormData] = useState<FormData>({
+    event_id: '', // Initialize event_id as an empty string
     eventName: '',
     eventLocation: '',
     eventExpiry: '',
@@ -26,14 +27,15 @@ export const useEventForm = ({ initialData, onSubmit }: UseEventFormProps) => {
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData(initialData); // Set initial data if provided
     } else {
-      resetForm();
+      resetForm(); // Reset form if initialData is null or undefined
     }
   }, [initialData]);
 
   const resetForm = () => {
     setFormData({
+      event_id: '',
       eventName: '',
       eventLocation: '',
       eventExpiry: '',
@@ -52,11 +54,12 @@ export const useEventForm = ({ initialData, onSubmit }: UseEventFormProps) => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.id) {
-      formData.id = uuidv4(); // Generate UUID for new event
+    if (!formData.event_id) {
+      formData.event_id = uuidv4(); // Generate _id if not present
     }
-    onSubmit(formData);
-    resetForm();
+    console.log("Form Data Submitted:", formData);
+    onSubmit(formData); // Call onSubmit function with form data
+    resetForm(); // Reset form after submission
   };
 
   return {

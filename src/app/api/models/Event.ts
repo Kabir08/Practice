@@ -1,7 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
-// Define the interface for the document (instance) of the Event model
 export interface EventDocument extends Document {
+    event_id: string;
     eventName: string;
     eventLocation: string;
     eventExpiry: Date;
@@ -9,11 +10,10 @@ export interface EventDocument extends Document {
     eventColor: string;
 }
 
-// Define the interface for the Event model itself
 export interface EventModel extends mongoose.Model<EventDocument> {}
 
-// Define the schema for the Event model
 const EventSchema: Schema<EventDocument> = new Schema({
+    event_id: { type: String, default: () => uuidv4() },
     eventName: { type: String, required: true },
     eventLocation: { type: String, required: true },
     eventExpiry: { type: Date, required: true },
@@ -21,7 +21,6 @@ const EventSchema: Schema<EventDocument> = new Schema({
     eventColor: { type: String, required: true },
 });
 
-// Define and export the Event model using the schema and interfaces
 const Event = mongoose.models.Event as EventModel || mongoose.model<EventDocument, EventModel>('Event', EventSchema);
 
 export default Event;

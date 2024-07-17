@@ -1,4 +1,3 @@
-'use client'
 import React from 'react';
 import Modal from 'react-modal';
 import Image from 'next/image';
@@ -45,6 +44,8 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, onSubm
       <div className="flex flex-col justify-center items-center">
         <h2>{initialData ? 'Edit Event' : 'Create Event'}</h2>
         <form className="flex flex-col justify-center items-center gap-2" onSubmit={handleSubmit} style={{ width: '100%' }}>
+          <input type="hidden" id="_id" name="_id" value={formData.event_id || ''} />
+
           <label htmlFor="eventName">Event Name:</label>
           <input
             type="text"
