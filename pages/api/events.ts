@@ -1,12 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/app/api/mongoose';
 import Event from '@/app/api/models/Event';
+import { getSession } from '@auth0/nextjs-auth0';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
     await connectDB(); // Establish database connection
 
     const { method } = req;
     const eventId = req.query.eventId as string;
+    const session = await getSession(req, res);
+
+    if (!session || !session.user) {
+        return res.status(401).json({ message: 'You must be logged in to create an event' });
+      }
+
+      const userId = session.user.sub;
 
     switch (method) {
         case 'GET':
@@ -27,7 +35,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             break;
         case 'POST':
             try {
-                const event = new Event(req.body);
+                const event = new Event({
+                    ...req.body,
+                    user_id: userId, // Add user_id to the event
+                  });
                 await event.save();
                 res.status(201).json(event);
             } catch (error) {

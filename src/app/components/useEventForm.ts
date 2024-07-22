@@ -8,6 +8,7 @@ export interface FormData {
   eventExpiry: string;
   eventDescription: string;
   eventColor: string;
+  creatorName: string;
 }
 
 interface UseEventFormProps {
@@ -23,6 +24,7 @@ export const useEventForm = ({ initialData, onSubmit }: UseEventFormProps) => {
     eventExpiry: '',
     eventDescription: '',
     eventColor: 'purple',
+    creatorName: '',
   });
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export const useEventForm = ({ initialData, onSubmit }: UseEventFormProps) => {
       eventExpiry: '',
       eventDescription: '',
       eventColor: 'purple',
+      creatorName: '', 
     });
   };
 

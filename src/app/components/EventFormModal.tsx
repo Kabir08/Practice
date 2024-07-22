@@ -1,18 +1,23 @@
+'use client'
 import React from 'react';
 import Modal from 'react-modal';
 import Image from 'next/image';
 import { useEventForm, FormData } from './useEventForm';
 import { v4 as uuidv4 } from 'uuid'; // Import UUID v4
+import { useState } from 'react';
 
 interface EventFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (formData: FormData) => void;
   initialData?: FormData | null;
+  creatorName: string;
 }
 
 const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, onSubmit, initialData }) => {
   const { formData, handleChange, handleSubmit } = useEventForm({ initialData, onSubmit });
+  const [creatorName, setCreatorName] = useState<string | null>(null);
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
   return (
     <Modal
@@ -73,6 +78,17 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, onSubm
             name="eventExpiry"
             value={formData.eventExpiry}
             onChange={handleChange}
+            min={today} // Prevent selection of past dates
+            required
+          />
+
+          <label htmlFor="eventTime">Event Time:</label>
+          <input
+            type="time"
+            id="eventTime"
+            name="eventTime"
+            value={formData.eventTime}
+            onChange={handleChange}
             required
           />
 
@@ -126,6 +142,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, onSubm
               <span style={{ backgroundColor: 'red', width: '20px', height: '20px', display: 'inline-block', borderRadius: '50%' }}></span>
             </label>
           </div>
+
+          {/* Display creator's name if available */}
+          {creatorName !== undefined && creatorName !== null && (
+            <div>
+              <h3>Created by: {creatorName}</h3>
+            </div>
+          )}
 
           <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
             {initialData ? 'Update Event' : 'Create Event'}

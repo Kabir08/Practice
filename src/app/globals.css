@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add this to your global CSS file or CSS module */
+.tabs {
+    display: flex;
+    cursor: pointer;
+  }
+  
+  .tab {
+    padding: 10px;
+    margin: 0 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+  }
+  
+  .tab.active {
+    background-color: #0070f3;
+    color: white;
+    border: 1px solid #0070f3;
+  }
+  
