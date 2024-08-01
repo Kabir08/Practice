@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 const About = () => {
   return (
@@ -6,7 +6,7 @@ const About = () => {
       <h1 className="text-4xl font-bold text-center mb-4">🎉 Welcome to TouchGrass: Your Ultimate Event Playground! 🎉</h1>
       
       <p className="text-lg mb-4">
-        At TouchGrass, we're all about turning great ideas into unforgettable experiences! Whether you're passionate about organizing exciting <strong>outdoor adventures</strong> or cozy <strong>indoor gatherings</strong>, we've got you covered. Here's what you can look forward to:
+        At TouchGrass, we&apos;re all about turning great ideas into unforgettable experiences! Whether you&apos;re passionate about organizing exciting <strong>outdoor adventures</strong> or cozy <strong>indoor gatherings</strong>, we&apos;ve got you covered. Here&apos;s what you can look forward to:
       </p>
 
       <h2 className="text-3xl font-semibold mb-2">🌟 Create and Explore Events</h2>
@@ -54,7 +54,7 @@ const About = () => {
         Join TouchGrass today and be part of a vibrant community where every event is an opportunity to connect, create, and celebrate!
       </p>
     </div>
-  )
+  );
 }
 
-export default About
+export default About;

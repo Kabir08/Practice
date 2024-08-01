@@ -4,18 +4,30 @@ import connectDB from '@/app/api/mongoose'; // Adjust the import path as necessa
 import User from '@/app/api/models/User'; // Adjust the import path as necessary
 import { v4 as uuidv4 } from 'uuid';
 
+// Define the type for the user object
+interface Auth0User {
+  email: string;
+  name: string;
+  picture: string;
+}
+
+// Define the type for the response from handleCallback
+interface CallbackResponse {
+  user: Auth0User;
+}
+
 const auth0CallbackHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   await connectDB();
 
   try {
     // Handle the callback
-    const { user } = await handleCallback(req, res);
+    const response = await handleCallback(req, res) as CallbackResponse;
+    const { user } = response;
 
-    // Ensure the user property is correctly typed
     if (user) {
-      const email = user.email as string;
-      const name = user.name as string;
-      const picture = user.picture as string;
+      const email = user.email;
+      const name = user.name;
+      const picture = user.picture;
 
       // Check if user exists in the database
       let dbUser = await User.findOne({ useremail: email });
