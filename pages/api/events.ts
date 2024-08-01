@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/app/api/mongoose';
 import Event from '@/app/api/models/Event';
+
 import { getSession } from '@auth0/nextjs-auth0';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -8,6 +9,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     const { method } = req;
     const eventId = req.query.eventId as string;
+    const searchQuery = req.query.search as string; // Get the search query from request parameters
     const session = await getSession(req, res);
 
     if (!session || !session.user) {
@@ -15,6 +17,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       const userId = session.user.sub;
+
+    
+    // Set cache control headers
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+
 
     switch (method) {
         case 'GET':
@@ -26,7 +33,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                     }
                     res.status(200).json(event);
                 } else {
-                    const events = await Event.find({});
+                    // Build search filter based on searchQuery
+                    const regex = new RegExp(searchQuery, 'i'); // Case-insensitive search
+                    const filter = searchQuery
+                        ? {
+                            $or: [
+                                { eventName: { $regex: regex } },
+                                { eventLocation: { $regex: regex } }
+                            ]
+                        }
+                        : {}; // Empty filter returns all events
+
+                    const events = await Event.find(filter);
                     res.status(200).json(events);
                 }
             } catch (error) {
@@ -67,6 +85,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to delete event' });
             }
             break;
+            
         default:
             res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
             res.status(405).end(`Method ${method} Not Allowed`);

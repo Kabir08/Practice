@@ -63,7 +63,7 @@ export default async function handler(req, res) {
           }
 
           const newUser = new User({
-            auth0Id: user.sub,
+            uuid: user.sub,
             username,
             avatar,
             paymentId,

@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# TouchGrass
+
+Welcome to **TouchGrass**, your ultimate platform for creating, discovering, and managing events! Whether you're organizing outdoor adventures or indoor activities, TouchGrass is designed to help you connect with like-minded individuals and turn your event ideas into reality.
+
+## Features
+
+### 🌟 Create and Explore Events
+- **Outdoor Adventures**: From hiking trips to beach parties, create and organize events that get people outdoors and active.
+- **Indoor Activities**: Host game nights, workshops, movie marathons, and more in a cozy indoor setting.
+
+### 🤝 Join and Connect
+- **Explore Events**: Discover a variety of events created by other users. Find and join events that match your interests.
+- **Connect with Others**: Meet and interact with other participants who share your passions.
+
+### 🛠️ Manage Your Events
+- **Edit & Delete**: Easily update or remove your events if your plans change. Flexibility is at your fingertips!
+
+### 📅 Event Details
+Each event includes:
+- **Event Name**: The title of the event.
+- **Location**: Where the event will take place.
+- **Time**: The scheduled date and time for the event.
+- **Description**: A detailed description of the event.
+
+### 🗂️ Personalized Dashboard
+- **Profile Customization**: Log in and enhance your profile with additional information. Share your Instagram handle to let others connect with you!
+
+### 📸 Connect with Others
+- **Instagram Integration**: Provide your Instagram ID through your dashboard, and allow others to view and follow your profile. Chat and collaborate on events seamlessly.
+
+### 💬 Community Engagement
+- **Engage and Converse**: Interact with event creators and participants. Share ideas, ask questions, and build new friendships.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+Ensure you have the following installed:
+- Node.js
+- npm or yarn
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Installation
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Kabir08/TouchGrass.git

@@ -11,13 +11,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const user = session.user;
+    const { uuid, email } = req.query; // Extract uuid and email from query parameters
 
     try {
       if (mongoose.connection.readyState !== 1) {
         await mongoose.connect(process.env.NEXT_PUBLIC_MONGODB_URI || '');
       }
 
-      const userData = await User.findOne({ auth0Id: user.sub }).select('-paymentId -paymentSecret') as IUser;
+      let userData: IUser | null = null;
+
+      if (uuid) {
+        userData = await User.findOne({ uuid }).select('-paymentId -paymentSecret') as IUser;
+      } else if (email) {
+        userData = await User.findOne({ email: decodeURIComponent(email as string) }).select('-paymentId -paymentSecret') as IUser;
+      } else {
+        return res.status(400).json({ error: 'Bad Request: uuid or email is required' });
+      }
+
       if (!userData) {
         return res.status(404).json({ error: 'User not found' });
       }

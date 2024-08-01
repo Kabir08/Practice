@@ -1,29 +1,35 @@
 'use client';
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useCallback } from "react";
 import EventFormModal from "@/app/components/EventFormModal"; // Adjust the path as per your project structure
 import { useUser } from "@auth0/nextjs-auth0/client";
+import debounce from 'lodash.debounce';
+import { FaHeart, FaPlus, FaCheck } from 'react-icons/fa';
 
 const HomePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
-  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff'); // Default to white
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [likedEvents, setLikedEvents] = useState<Map<string, number>>(new Map()); // Map for likes count
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set()); // Set for liked event IDs
+  const [addedEvents, setAddedEvents] = useState<Set<string>>(new Set()); // Set for added event IDs
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
-  const fetchEvents = async () => {
+
+  // Fetch events from the server
+  const fetchEvents = async (query: string = '') => {
     try {
-      const response = await fetch('/api/events');
+      const response = await fetch(`/api/events?search=${encodeURIComponent(query)}`);
       if (response.ok) {
-        const data = await response.json();
+        const data: any[] = await response.json();
         setEvents(data);
-        if (data.length > 0) {
-          // Set the background color of the last event as an example
-          setBackgroundColor(data[data.length - 1].eventColor);
-        }
+        // Initialize likes count and user likes from the fetched events
+        const likesMap = new Map(data.map(event => [event.event_id, event.likes || 0]));
+        const userLikesSet = new Set(data.filter(event => event.userLiked).map(event => event.event_id));
+        const addedEventsSet = new Set(data.filter(event => event.addedByUser).map(event => event.event_id)); // Assuming the property for added events
+        setLikedEvents(likesMap);
+        setUserLikes(userLikesSet);
+        setAddedEvents(addedEventsSet);
       } else {
         console.error('Failed to fetch events');
       }
@@ -32,6 +38,21 @@ const HomePage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), []);
+
+
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+    debouncedFetchEvents(query); // Call the debounced function
+  };
+
+
   const openModal = () => setIsModalOpen(true);
 
   const closeModal = () => {
@@ -39,6 +60,7 @@ const HomePage: React.FC = () => {
     setEditingEvent(null);
   };
 
+  // Handle form submission for creating or updating events
   const handleFormSubmit = async (formData: any) => {
     try {
       let response;
@@ -58,7 +80,7 @@ const HomePage: React.FC = () => {
           const updatedEvent = await response.json();
           setEvents(events.map(event => (event.event_id === updatedEvent.event_id ? updatedEvent : event)));
           setEditingEvent(null); // Clear editing state
-          setBackgroundColor(updatedEvent.eventColor); // Update background color
+          console.log('Updated event:', updatedEvent);
         } else {
           console.error('Failed to update event');
         }
@@ -75,7 +97,7 @@ const HomePage: React.FC = () => {
         if (response.ok) {
           const newEvent = await response.json();
           setEvents([...events, newEvent]); // Add new event to events state
-          setBackgroundColor(newEvent.eventColor); // Update background color
+          console.log('Created new event:', newEvent);
         } else {
           console.error('Failed to create event');
         }
@@ -89,11 +111,109 @@ const HomePage: React.FC = () => {
 
   const { user, error, isLoading } = useUser();
 
+  const handleLike = async (eventId: string) => {
+    const isLiked = userLikes.has(eventId);
+    const newLikes = (likedEvents.get(eventId) || 0) + (isLiked ? -1 : 1);
+  
+    setLikedEvents(prev => new Map(prev).set(eventId, newLikes));
+    setUserLikes(prev => {
+      const newSet = new Set(prev);
+      if (isLiked) {
+        newSet.delete(eventId);
+      } else {
+        newSet.add(eventId);
+      }
+      return newSet;
+    });
+  
+    try {
+      const response = await fetch(`/api/events/${eventId}/like`, { // Assuming this endpoint handles user-specific likes
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ liked: !isLiked }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update likes');
+      }
+  
+      const data = await response.json();
+      setLikedEvents(prev => new Map(prev).set(eventId, data.likes));
+    } catch (error) {
+      console.error('Error updating likes:', error);
+      // Revert the like status on error
+      setLikedEvents(prev => new Map(prev).set(eventId, (likedEvents.get(eventId) || 0) - (isLiked ? 1 : -1)));
+      setUserLikes(prev => {
+        const newSet = new Set(prev);
+        if (isLiked) {
+          newSet.add(eventId);
+        } else {
+          newSet.delete(eventId);
+        }
+        return newSet;
+      });
+    }
+  };
+  
+
+
+  const handleAdd = async (eventId: string) => {
+    if (!user) {
+      alert('Please sign in to add events.');
+      return;
+    }
+  
+    const isAdded = addedEvents.has(eventId);
+  
+    try {
+      const response = await fetch(`/api/users/${user.sub}/events`, { // Assuming this endpoint handles user-specific added events
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId: eventId,
+          action: isAdded ? 'remove' : 'add',
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to update event');
+      }
+  
+      const updatedUser = await response.json();
+      setAddedEvents(prev => {
+        const newSet = new Set(prev);
+        if (isAdded) {
+          newSet.delete(eventId);
+        } else {
+          newSet.add(eventId);
+        }
+        return newSet;
+      });
+  
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
+  };
+  
+
+
+
+  const formatLikes = (count: number) => {
+    if (count >= 1000) {
+      return `${Math.floor(count / 1000)}k+`;
+    }
+    return count.toString();
+  };
+
   if (isLoading) return <div>Loading.....</div>;
   if (error) return <div>{error.message}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8" style={{ backgroundColor: backgroundColor ? `${backgroundColor}20` : '#ffffff' }}>
+    <div className="container mx-auto px-4 py-8">
       <div className="flex justify-end mb-4">
         {user ? (
           <button onClick={openModal} className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
@@ -105,24 +225,53 @@ const HomePage: React.FC = () => {
           </button>
         )}
       </div>
-
-      <EventFormModal isOpen={isModalOpen} onClose={closeModal} onSubmit={handleFormSubmit} initialData={editingEvent} creatorName={user?.name ?? "Anonymous"} />
-
+  
+      <EventFormModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSubmit={handleFormSubmit}
+        initialData={editingEvent}
+        creatorName={user?.name ?? "Anonymous"}
+      />
+  
       <div className={`space-y-4 ${!user ? 'blur-sm' : ''}`}>
         <h2 className="text-2xl font-bold">Events</h2>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          className="mb-4 p-2 border border-gray-300 rounded-md w-full max-w-md"
+          placeholder="Search events..."
+        />
         <ul className="space-y-2">
           {events.map((event) => (
             <li key={event.event_id} className="bg-gray-100 p-4 rounded-md shadow-md">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                 <h3 className="text-lg font-semibold">{event.eventName}</h3>
                 <div>
-                  <h2>{event.creatorName}</h2>
+                  <h2 className="text-md font-medium">{event.creatorName}</h2>
                 </div>
               </div>
-              <p className="text-gray-700">{event.eventDescription}</p>
-              <p className="text-gray-700">Location: {event.eventLocation}</p>
-              <p className="text-gray-700">Expires at: {new Date(event.eventExpiry).toLocaleDateString()} {new Date(event.eventExpiry).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
-              <p className="text-gray-700">Color: {event.eventColor}</p>
+              <p className="text-gray-700 mt-2 text-sm line-clamp-3">
+                {event.eventDescription}
+              </p>
+              <p className="text-gray-700 text-sm mt-1">Location: {event.eventLocation}</p>
+              <p className="text-gray-700 text-sm mt-1">
+                Expires at: {new Date(event.eventExpiry).toLocaleDateString()} {new Date(event.eventExpiry).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </p>
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 items-center mt-2">
+                <button onClick={() => handleLike(event.event_id)} className="flex items-center">
+                  <FaHeart color={userLikes.has(event.event_id) ? 'red' : 'grey'} />
+                  <span className="ml-2 text-sm">{formatLikes(likedEvents.get(event.event_id) || 0)}</span>
+                </button>
+                <button onClick={() => handleAdd(event.event_id)} className="flex items-center">
+                  {addedEvents.has(event.event_id) ? (
+                    <FaCheck color='green' />
+                  ) : (
+                    <FaPlus color='grey' />
+                  )}
+                </button>
+              </div>
             </li>
           ))}
         </ul>
@@ -130,5 +279,4 @@ const HomePage: React.FC = () => {
     </div>
   );
 };
-
 export default HomePage;

@@ -1,23 +1,27 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUser extends Document {
-  auth0Id: string;
+  uuid: string;
   username: string;
+  useremail:string;
   avatar: string;
   paymentId: string;
   paymentSecret: string;
   instagram: string;
-  X: string; // Rename this if needed, but ensure consistency
+  x: string; // Rename this if needed, but ensure consistency
+  events: string[]; // Array to track added events
 }
 
 const userSchema: Schema<IUser> = new Schema({
-  auth0Id: { type: String, required: true, unique: true },
+  uuid: { type: String, required: true, unique: true },
   username: { type: String, required: true },
+  useremail: { type: String, required: true, unique: true },
   avatar: { type: String },
   paymentId: { type: String },
   paymentSecret: { type: String },
   instagram: { type: String },
-  X: { type: String },
+  x: { type: String },
+  events: [{ type: String }], // Track added events
 });
 
 const User = mongoose.models.User || mongoose.model<IUser>('User', userSchema);

@@ -4,6 +4,7 @@ import next from 'next';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import { getSession } from '@auth0/nextjs-auth0';
+import User from '@/app/api/models/User'; // Adjust the path to your User model
 
 // Initialize Next.js
 const dev = process.env.NODE_ENV !== 'production';
@@ -23,6 +24,7 @@ server.use(express.urlencoded({ extended: true }));
 server.post('/api/submit', upload.single('avatar'), async (req, res) => {
   console.log('Received request:', req.method, req.body);
 
+  // Get session from Auth0
   const session = await getSession(req, res);
   if (!session || !session.user) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -31,6 +33,7 @@ server.post('/api/submit', upload.single('avatar'), async (req, res) => {
   const user = session.user;
 
   try {
+    // Extract data from the request body
     const {
       username,
       paymentId,
@@ -40,20 +43,21 @@ server.post('/api/submit', upload.single('avatar'), async (req, res) => {
       github
     } = req.body;
 
-    const avatar = req.file ? req.file.buffer.toString('base64') : null; // Store avatar as base64 string
+    // Store avatar as base64 string
+    const avatar = req.file ? req.file.buffer.toString('base64') : null;
 
     // Save user data to MongoDB
-    // const newUser = new User({
-    //   auth0Id: user.sub,
-    //   username,
-    //   avatar,
-    //   paymentId,
-    //   paymentSecret,
-    //   instagram,
-    //   linkedin,
-    //   github,
-    // });
-    // await newUser.save();
+    const newUser = new User({
+      auth0Id: user.sub,
+      username,
+      avatar,
+      paymentId,
+      paymentSecret,
+      instagram,
+      linkedin,
+      github,
+    });
+    await newUser.save();
 
     res.status(201).json({ message: 'User data saved successfully.' });
   } catch (error) {
