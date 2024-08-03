@@ -14,17 +14,15 @@ const HomePage: React.FC = () => {
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set()); // Set for liked event IDs
   const [addedEvents, setAddedEvents] = useState<Set<string>>(new Set()); // Set for added event IDs
 
-  // Fetch events from the server
-  const fetchEvents = async (query: string = '') => {
+  const fetchEvents = useCallback(async (query: string = '') => {
     try {
       const response = await fetch(`/api/events?search=${encodeURIComponent(query)}`);
       if (response.ok) {
         const data: any[] = await response.json();
         setEvents(data);
-        // Initialize likes count and user likes from the fetched events
         const likesMap = new Map(data.map(event => [event.event_id, event.likes || 0]));
         const userLikesSet = new Set(data.filter(event => event.userLiked).map(event => event.event_id));
-        const addedEventsSet = new Set(data.filter(event => event.addedByUser).map(event => event.event_id)); // Assuming the property for added events
+        const addedEventsSet = new Set(data.filter(event => event.addedByUser).map(event => event.event_id));
         setLikedEvents(likesMap);
         setUserLikes(userLikesSet);
         setAddedEvents(addedEventsSet);
@@ -34,14 +32,11 @@ const HomePage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []); // Dependency array is fine; fetchEvents doesn't change
+  }, []); // Add dependencies if needed
+  
 
   // Include fetchEvents in the dependency array
-  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), []); // Corrected: fetchEvents is not in the dependency array
+  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), [fetchEvents]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
