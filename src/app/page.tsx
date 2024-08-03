@@ -38,10 +38,10 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, []); // Dependency array is fine; fetchEvents doesn't change
 
   // Include fetchEvents in the dependency array
-  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), [fetchEvents]);
+  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), []); // Corrected: fetchEvents is not in the dependency array
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
@@ -245,18 +245,19 @@ const HomePage: React.FC = () => {
               </div>
               <p className="text-gray-700 mt-2 text-sm line-clamp-2">{event.eventDescription}</p>
               <div className="flex justify-between items-center mt-4">
-                <div className="flex items-center">
-                  <button
-                    onClick={() => handleLike(event.event_id)}
-                    className={`mr-2 text-pink-500 hover:text-pink-600 focus:outline-none ${userLikes.has(event.event_id) ? 'text-pink-600' : ''}`}
-                  >
-                    <FaHeart />
+                <div className="flex items-center space-x-2">
+                  <button onClick={() => handleLike(event.event_id)}>
+                    {userLikes.has(event.event_id) ? (
+                      <FaHeart className="text-red-500" />
+                    ) : (
+                      <FaHeart className="text-gray-500" />
+                    )}
                   </button>
-                  <span className="text-gray-600 text-sm">{formatLikes(likedEvents.get(event.event_id) || 0)} Likes</span>
+                  <span>{formatLikes(likedEvents.get(event.event_id) || 0)}</span>
                 </div>
                 <button
                   onClick={() => handleAdd(event.event_id)}
-                  className="text-green-500 hover:text-green-600 focus:outline-none"
+                  className={`flex items-center space-x-2 ${addedEvents.has(event.event_id) ? 'text-green-500' : 'text-gray-500'}`}
                 >
                   {addedEvents.has(event.event_id) ? <FaCheck /> : <FaPlus />}
                 </button>
@@ -265,17 +266,6 @@ const HomePage: React.FC = () => {
           ))}
         </ul>
       </div>
-
-      {!user && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-8 rounded-md shadow-lg text-center">
-            <p className="text-lg font-semibold mb-4">Please sign in to view and create events.</p>
-            <a href="/api/auth/login" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
-              Sign In
-            </a>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
