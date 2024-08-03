@@ -1,16 +1,12 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 const CreatedEventsPage: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const { user, error, isLoading } = useUser();
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const response = await fetch('/api/events');
       if (response.ok) {
@@ -23,7 +19,11 @@ const CreatedEventsPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
+  }, [user?.name]); // Added user?.name as a dependency
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]); // Updated the dependency array
 
   if (isLoading) return <div>Loading.....</div>;
   if (error) return <div>{error.message}</div>;

@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUser } from "@auth0/nextjs-auth0/client";
 import EventFormModal from "@/app/components/EventFormModal"; // Adjust the path as needed
 
@@ -9,11 +9,7 @@ const YourEventsPage: React.FC = () => {
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
   const { user, error, isLoading } = useUser();
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const response = await fetch('/api/events');
       if (response.ok) {
@@ -26,7 +22,11 @@ const YourEventsPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching events:', error);
     }
-  };
+  }, [user?.name]); // Added user?.name as a dependency
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]); // Updated the dependency array
 
   const openModal = () => setIsModalOpen(true);
 

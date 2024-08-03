@@ -3,7 +3,7 @@ import connectDB from '@/app/api/mongoose';
 import User from '@/app/api/models/User';
 import { v4 as uuidv4 } from 'uuid';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const usersHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   await connectDB();
 
   const { method } = req;
@@ -96,3 +96,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       break;
   }
 };
+
+export default usersHandler;

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 
 interface FormData {
   uuid?: string;
@@ -179,7 +180,7 @@ const EditInfo: React.FC = () => {
             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"
           />
           {avatarUrl && (
-            <img src={avatarUrl} alt="Avatar Preview" className="mt-2 h-24 w-24 object-cover rounded-full" />
+            <Image src={avatarUrl} alt="Avatar Preview" className="mt-2 h-24 w-24 object-cover rounded-full" />
           )}
         </div>
         <div>

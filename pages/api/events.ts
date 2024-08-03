@@ -1,10 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/app/api/mongoose';
 import Event from '@/app/api/models/Event';
-
 import { getSession } from '@auth0/nextjs-auth0';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const eventsHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     await connectDB(); // Establish database connection
 
     const { method } = req;
@@ -14,14 +13,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (!session || !session.user) {
         return res.status(401).json({ message: 'You must be logged in to create an event' });
-      }
+    }
 
-      const userId = session.user.sub;
+    const userId = session.user.sub;
 
-    
     // Set cache control headers
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-
 
     switch (method) {
         case 'GET':
@@ -56,7 +53,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 const event = new Event({
                     ...req.body,
                     user_id: userId, // Add user_id to the event
-                  });
+                });
                 await event.save();
                 res.status(201).json(event);
             } catch (error) {
@@ -85,10 +82,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to delete event' });
             }
             break;
-            
         default:
             res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
             res.status(405).end(`Method ${method} Not Allowed`);
             break;
     }
 };
+
+export default eventsHandler;

@@ -2,14 +2,14 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/app/api/mongoose';
 import Event, { EventDocument } from '@/app/api/models/Event';
 import { getSession } from '@auth0/nextjs-auth0';
-import User from '@/app/api/models/User';  // Ensure User model is imported
+import User from '@/app/api/models/User'; // Ensure User model is imported
 
-
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+// Assign arrow function to a variable before exporting as module default
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     await connectDB(); // Establish database connection
+
     // Set cache control headers
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-
 
     const { method } = req;
     const eventId = req.query.event_id as string;
@@ -33,6 +33,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to fetch event' });
             }
             break;
+
         case 'POST':
             // Handle adding an event to the user's dashboard
             try {
@@ -63,9 +64,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to add event to user dashboard' });
             }
             break;
+
         case 'PUT':
             try {
-                const updatedEvent = await Event.findOneAndUpdate({ event_id: eventId }, req.body, { new: true });
+                const updatedEvent = await Event.findOneAndUpdate(
+                    { event_id: eventId },
+                    req.body,
+                    { new: true }
+                );
                 if (!updatedEvent) {
                     return res.status(404).json({ error: 'Event not found' });
                 }
@@ -74,6 +80,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to update event' });
             }
             break;
+
         case 'PATCH':
             try {
                 const { addedByUser } = req.body; // Extract the patch fields from request body
@@ -93,6 +100,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to update event' });
             }
             break;
+
         case 'DELETE':
             try {
                 const deletedEvent = await Event.findOneAndDelete({ event_id: eventId });
@@ -104,9 +112,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 res.status(500).json({ error: 'Failed to delete event' });
             }
             break;
+
         default:
             res.setHeader('Allow', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
             res.status(405).end(`Method ${method} Not Allowed`);
             break;
     }
 };
+
+export default handler; // Export the named function instead of an anonymous one

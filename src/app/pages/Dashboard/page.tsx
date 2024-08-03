@@ -5,6 +5,7 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 import Link from 'next/link';
 import EventFormModal from '@/app/components/EventFormModal'; // Adjust the import path if necessary
 import debounce from 'lodash/debounce';
+import Image from 'next/image';
 
 const Dashboard: React.FC = () => {
   const [user, setUser] = useState<{ username: string; avatar: string; instagram: string } | null>(null);
@@ -182,7 +183,7 @@ const Dashboard: React.FC = () => {
       <div className='flex flex-col md:flex-row items-center md:justify-between'>
         <div className='flex flex-col items-center md:items-start'>
           {user?.avatar ? (
-            <img src={`data:image/jpeg;base64,${user.avatar}`} alt="Profile Pic" className="h-24 w-24 rounded-full object-cover" />
+            <Image src={`data:image/jpeg;base64,${user.avatar}`} alt="Profile Pic" className="h-24 w-24 rounded-full object-cover" />
           ) : (
             <div className="h-24 w-24 rounded-full bg-gray-200"></div>
           )}
@@ -192,7 +193,7 @@ const Dashboard: React.FC = () => {
           {user?.instagram && (
             <div className='flex items-center'>
               <a href={`https://www.instagram.com/${user.instagram}`} target="_blank" rel="noopener noreferrer">
-                <img src="/Instagram_icon.png" alt="Instagram" className={`h-6 w-6 ${user.instagram ? '' : 'grayscale'}`} />
+                <Image src="/Instagram_icon.png" alt="Instagram" className={`h-6 w-6 ${user.instagram ? '' : 'grayscale'}`} />
               </a>
             </div>
           )}

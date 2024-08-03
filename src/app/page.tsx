@@ -14,8 +14,6 @@ const HomePage: React.FC = () => {
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set()); // Set for liked event IDs
   const [addedEvents, setAddedEvents] = useState<Set<string>>(new Set()); // Set for added event IDs
 
-
-
   // Fetch events from the server
   const fetchEvents = async (query: string = '') => {
     try {
@@ -42,16 +40,14 @@ const HomePage: React.FC = () => {
     fetchEvents();
   }, []);
 
-  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), []);
-
-
+  // Include fetchEvents in the dependency array
+  const debouncedFetchEvents = useCallback(debounce((query: string) => fetchEvents(query), 500), [fetchEvents]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const query = event.target.value;
     setSearchQuery(query);
     debouncedFetchEvents(query); // Call the debounced function
   };
-
 
   const openModal = () => setIsModalOpen(true);
 
@@ -114,7 +110,7 @@ const HomePage: React.FC = () => {
   const handleLike = async (eventId: string) => {
     const isLiked = userLikes.has(eventId);
     const newLikes = (likedEvents.get(eventId) || 0) + (isLiked ? -1 : 1);
-  
+
     setLikedEvents(prev => new Map(prev).set(eventId, newLikes));
     setUserLikes(prev => {
       const newSet = new Set(prev);
@@ -125,7 +121,7 @@ const HomePage: React.FC = () => {
       }
       return newSet;
     });
-  
+
     try {
       const response = await fetch(`/api/events/${eventId}/like`, { // Assuming this endpoint handles user-specific likes
         method: 'POST',
@@ -134,11 +130,11 @@ const HomePage: React.FC = () => {
         },
         body: JSON.stringify({ liked: !isLiked }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update likes');
       }
-  
+
       const data = await response.json();
       setLikedEvents(prev => new Map(prev).set(eventId, data.likes));
     } catch (error) {
@@ -156,17 +152,15 @@ const HomePage: React.FC = () => {
       });
     }
   };
-  
-
 
   const handleAdd = async (eventId: string) => {
     if (!user) {
       alert('Please sign in to add events.');
       return;
     }
-  
+
     const isAdded = addedEvents.has(eventId);
-  
+
     try {
       const response = await fetch(`/api/users/${user.sub}/events`, { // Assuming this endpoint handles user-specific added events
         method: 'PATCH',
@@ -178,11 +172,11 @@ const HomePage: React.FC = () => {
           action: isAdded ? 'remove' : 'add',
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to update event');
       }
-  
+
       const updatedUser = await response.json();
       setAddedEvents(prev => {
         const newSet = new Set(prev);
@@ -193,14 +187,11 @@ const HomePage: React.FC = () => {
         }
         return newSet;
       });
-  
+
     } catch (error) {
       console.error('Error updating event:', error);
     }
   };
-  
-
-
 
   const formatLikes = (count: number) => {
     if (count >= 1000) {
@@ -225,7 +216,7 @@ const HomePage: React.FC = () => {
           </button>
         )}
       </div>
-  
+
       <EventFormModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -233,7 +224,7 @@ const HomePage: React.FC = () => {
         initialData={editingEvent}
         creatorName={user?.name ?? "Anonymous"}
       />
-  
+
       <div className={`space-y-4 ${!user ? 'blur-sm' : ''}`}>
         <h2 className="text-2xl font-bold">Events</h2>
         <input
@@ -252,31 +243,41 @@ const HomePage: React.FC = () => {
                   <h2 className="text-md font-medium">{event.creatorName}</h2>
                 </div>
               </div>
-              <p className="text-gray-700 mt-2 text-sm line-clamp-3">
-                {event.eventDescription}
-              </p>
-              <p className="text-gray-700 text-sm mt-1">Location: {event.eventLocation}</p>
-              <p className="text-gray-700 text-sm mt-1">
-                Expires at: {new Date(event.eventExpiry).toLocaleDateString()} {new Date(event.eventExpiry).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-              </p>
-              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 items-center mt-2">
-                <button onClick={() => handleLike(event.event_id)} className="flex items-center">
-                  <FaHeart color={userLikes.has(event.event_id) ? 'red' : 'grey'} />
-                  <span className="ml-2 text-sm">{formatLikes(likedEvents.get(event.event_id) || 0)}</span>
-                </button>
-                <button onClick={() => handleAdd(event.event_id)} className="flex items-center">
-                  {addedEvents.has(event.event_id) ? (
-                    <FaCheck color='green' />
-                  ) : (
-                    <FaPlus color='grey' />
-                  )}
+              <p className="text-gray-700 mt-2 text-sm line-clamp-2">{event.eventDescription}</p>
+              <div className="flex justify-between items-center mt-4">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => handleLike(event.event_id)}
+                    className={`mr-2 text-pink-500 hover:text-pink-600 focus:outline-none ${userLikes.has(event.event_id) ? 'text-pink-600' : ''}`}
+                  >
+                    <FaHeart />
+                  </button>
+                  <span className="text-gray-600 text-sm">{formatLikes(likedEvents.get(event.event_id) || 0)} Likes</span>
+                </div>
+                <button
+                  onClick={() => handleAdd(event.event_id)}
+                  className="text-green-500 hover:text-green-600 focus:outline-none"
+                >
+                  {addedEvents.has(event.event_id) ? <FaCheck /> : <FaPlus />}
                 </button>
               </div>
             </li>
           ))}
         </ul>
       </div>
+
+      {!user && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-8 rounded-md shadow-lg text-center">
+            <p className="text-lg font-semibold mb-4">Please sign in to view and create events.</p>
+            <a href="/api/auth/login" className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
+              Sign In
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
 export default HomePage;

@@ -1,10 +1,9 @@
-// pages/api/user-events.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectDB from '@/app/api/mongoose';
 import Event from '@/app/api/models/Event';
 import { getSession } from '@auth0/nextjs-auth0';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const userEventsHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     await connectDB(); // Establish database connection
 
     const { method } = req;
@@ -31,3 +30,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             break;
     }
 };
+
+export default userEventsHandler;
