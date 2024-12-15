@@ -89,7 +89,7 @@ const handleAIClick = async () => {
           />
 
           <label htmlFor="eventLocation" style={{ fontWeight: 'bold' }}>Event Location:</label>
-          <div style={{ position: 'relative', width: '100%' }}>
+          <div style={{ position: 'absolute', width: '100%' }}>
             <input
               type="text"
               id="eventLocation"

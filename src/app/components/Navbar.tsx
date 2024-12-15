@@ -8,7 +8,6 @@ const Navbar = () => {
     <nav className='flex justify-around items-center p-5 bg-slate-200'>
       <div>
       <Link href="/">
-    
       <Image
         src="/Grass_Field_(157789275).jpeg" // Path relative to the public directory
         alt="Grass Field" // Add an alt text for accessibility
@@ -16,9 +15,9 @@ const Navbar = () => {
         height={100} // Set appropriate height
         style={{borderRadius:'100%'}}
       />
-    
-  </Link>
+    </Link>
       </div>
+      <li className=''>Touch Grass is under DATABASE MAINTAINANCE</li>
       <div className='flex space-x-3 p-3 cursor-pointer '>
         <Link className='hover:underline' href="/pages/Dashboard">
           Dashboard 

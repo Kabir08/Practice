@@ -4,9 +4,8 @@ import Event, { EventDocument } from '@/app/api/models/Event';
 import { getSession } from '@auth0/nextjs-auth0';
 import User from '@/app/api/models/User'; // Ensure User model is imported
 
-// Assign arrow function to a variable before exporting as module default
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-    await connectDB(); // Establish database connection
+    await connectDB(); 
 
     // Set cache control headers
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
