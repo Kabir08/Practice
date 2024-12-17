@@ -19,6 +19,29 @@ const EventFormModal: React.FC<EventFormModalProps> = ({ isOpen, onClose, onSubm
 
   // Function to handle AI description generation
   // EventFormModal.tsx
+  const handleFormSubmit = async (formData: FormData) => {
+    try {
+      const response = await fetch('/api/events', {  // Updated to the correct endpoint
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit event');
+      }
+
+      // Handle success (e.g., show success message or close modal)
+      alert('Event created successfully!');
+      // Close modal after submission
+
+    } catch (error) {
+      console.error('Error submitting event:', error);
+      alert('There was an error submitting the event');
+    }
+  };
 const handleAIClick = async () => {
   if (!formData.eventName || !formData.eventLocation) {
     console.warn('Event Name or Event Location is not defined. Cannot generate description.');
@@ -89,7 +112,7 @@ const handleAIClick = async () => {
           />
 
           <label htmlFor="eventLocation" style={{ fontWeight: 'bold' }}>Event Location:</label>
-          <div style={{ position: 'absolute', width: '100%' }}>
+          <div style={{ position: 'relative', width: '100%' }}>
             <input
               type="text"
               id="eventLocation"
